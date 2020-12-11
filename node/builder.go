@@ -16,16 +16,16 @@ import (
 
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket/discovery"
-	"github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/chain/types"
-	rmodules "github.com/filecoin-project/lotus/cmd/lotus-retrieve-api-daemon/node/modules"
 	"github.com/filecoin-project/lotus/lib/peermgr"
-	"github.com/filecoin-project/lotus/node/impl"
 	"github.com/filecoin-project/lotus/node/modules"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/modules/helpers"
 	"github.com/filecoin-project/lotus/node/modules/lp2p"
 	"github.com/filecoin-project/lotus/node/repo"
+	"github.com/jimpick/lotus-retrieve-api-daemon/api"
+	"github.com/jimpick/lotus-retrieve-api-daemon/node/impl"
+	rmodules "github.com/jimpick/lotus-retrieve-api-daemon/node/modules"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
@@ -315,10 +315,10 @@ func Online() Option {
 }
 
 // func FullAPI(out *api.Retrieve) Option {
-func RetrieveAPI(out *api.Retrieve) Option {
+func RetrieveAPI(out *api.RetrieveAPI) Option {
 	return Options(
 		func(s *Settings) error {
-			s.nodeType = repo.RetrieveAPI
+			s.nodeType = repo.Worker
 			return nil
 		},
 		func(s *Settings) error {

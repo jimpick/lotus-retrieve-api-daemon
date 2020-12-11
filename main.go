@@ -9,10 +9,11 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/filecoin-project/go-jsonrpc"
-	"github.com/filecoin-project/lotus/api"
 	lcli "github.com/filecoin-project/lotus/cli"
-	"github.com/jimpick/lotus-retrieve-api-daemon/node"
+	"github.com/filecoin-project/lotus/node/modules/moduleapi"
 	"github.com/filecoin-project/lotus/node/repo"
+	"github.com/jimpick/lotus-retrieve-api-daemon/api"
+	"github.com/jimpick/lotus-retrieve-api-daemon/node"
 )
 
 const flagRetrieveRepo = "retrieve-repo"
@@ -23,7 +24,7 @@ var daemonCmd = &cli.Command{
 	Name:  "daemon",
 	Usage: "run retrieve api daemon",
 	Action: func(cctx *cli.Context) error {
-		var retrieveAPI api.Retrieve
+		var retrieveAPI api.RetrieveAPI
 
 		nodeAPI, ncloser, err := lcli.GetFullNodeAPI(cctx)
 		if err != nil {
@@ -37,7 +38,8 @@ var daemonCmd = &cli.Command{
 			return xerrors.Errorf("opening fs repo: %w", err)
 		}
 
-		if err := r.Init(repo.RetrieveAPI); err != nil && err != repo.ErrRepoExists {
+		// Re-use repo.Worker type as it has no config defaults
+		if err := r.Init(repo.Worker); err != nil && err != repo.ErrRepoExists {
 			return xerrors.Errorf("repo init error: %w", err)
 		}
 
@@ -47,13 +49,13 @@ var daemonCmd = &cli.Command{
 			node.RetrieveAPI(&retrieveAPI),
 			node.Repo(r),
 			node.Online(),
-			node.Override(new(api.FullNode), nodeAPI),
-			//node.Override(new(payapi.PaychAPI), nodeAPI),
+			// node.Override(new(api.FullNode), nodeAPI),
+			// node.Override(new(payapi.PaychAPI), nodeAPI),
 			// node.Override(new(full.ChainAPI), nodeAPI),
 			// node.Override(new(full.StateForRetrievalAPI), rfull.StateForRetrievalAPI),
-			node.Override(new(api.StateForRetrieval), nodeAPI),
-			node.Override(new(api.ChainForRetrieval), nodeAPI),
-			node.Override(new(api.PaychForRetrieval), nodeAPI),
+			node.Override(new(moduleapi.StateModuleAPI), nodeAPI),
+			node.Override(new(moduleapi.ChainModuleAPI), nodeAPI),
+			node.Override(new(moduleapi.PaychModuleAPI), nodeAPI),
 		)
 		if err != nil {
 			return xerrors.Errorf("initializing node: %w", err)
