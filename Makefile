@@ -3,17 +3,30 @@ export GOFLAGS=-tags=clientretrieve
 lotus-retrieve-api-daemon:
 	go build .
 
+gen:
+	#cd extern/lotus-modified && go run ./gen/main_clientretrieve.go && go generate ./...
+	rm -f extern/lotus-modified/api/cbor_gen.go
+	cd extern/lotus-modified && go run ./gen/main_clientretrieve.go
+	cd extern/lotus-modified && go generate ./...
+
 clean:
-	rm -f rm -f lotus-retrieve-api-daemon
+	rm -f lotus-retrieve-api-daemon
 
 env:
 	go env
 
 why-ffi:
-	go mod why github.com/filecoin-project/filecoin-ffi
+	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/filecoin-ffi")) | .ImportPath'
+
+why-seed:
+	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/cmd/lotus-seed/seed")) | .ImportPath'
+
+why-sector-storage:
+	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/extern/sector-storage")) | .ImportPath'
+
 
 list:
-	go list -e -json -compiled=true -test=true -deps=true .
+	go list -e -json -compiled=true -test=true -deps=true . | jq -C .
 
 checkout:
 	mkdir -p extern

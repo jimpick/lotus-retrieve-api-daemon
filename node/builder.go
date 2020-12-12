@@ -15,7 +15,6 @@ import (
 	record "github.com/libp2p/go-libp2p-record"
 
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
-	"github.com/filecoin-project/go-fil-markets/retrievalmarket/discovery"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/lib/peermgr"
 	"github.com/filecoin-project/lotus/node/modules"
@@ -238,7 +237,6 @@ func Online() Option {
 			Override(HandleIncomingBlocksKey, modules.HandleIncomingBlocks),
 		*/
 		Override(new(*discovery.Local), modules.NewLocalDiscovery),
-		Override(new(retrievalmarket.PeerResolver), modules.RetrievalResolver),
 		Override(new(retrievalmarket.RetrievalClient), rmodules.RetrievalClient),
 		Override(new(dtypes.ClientDatastore), modules.NewClientDatastore),
 		Override(new(dtypes.ClientDataTransfer), modules.NewClientGraphsyncDataTransfer),

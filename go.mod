@@ -3,10 +3,13 @@ module github.com/jimpick/lotus-retrieve-api-daemon
 go 1.15
 
 require (
+	github.com/filecoin-project/go-address v0.0.5-0.20201103152444-f2023ef3f5bb
 	github.com/filecoin-project/go-fil-markets v1.0.10
 	github.com/filecoin-project/go-jsonrpc v0.1.2
 	github.com/filecoin-project/lotus v1.2.1
-	github.com/filecoin-project/specs-actors v0.9.13
+	github.com/filecoin-project/specs-actors v0.9.13 // indirect
+	github.com/ipfs/go-cid v0.0.7
+	github.com/ipfs/go-graphsync v0.5.1
 	github.com/libp2p/go-libp2p-core v0.7.0
 	github.com/libp2p/go-libp2p-kad-dht v0.11.0
 	github.com/libp2p/go-libp2p-peerstore v0.2.6
