@@ -16,17 +16,17 @@ env:
 	go env
 
 why-ffi:
-	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/filecoin-ffi")) | .ImportPath'
+	go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/filecoin-ffi")) | .ImportPath'
 
 why-seed:
-	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/cmd/lotus-seed/seed")) | .ImportPath'
+	go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/cmd/lotus-seed/seed")) | .ImportPath'
 
 why-sector-storage:
-	go list -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/extern/sector-storage")) | .ImportPath'
+	go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | contains("github.com/filecoin-project/lotus/extern/sector-storage")) | .ImportPath'
 
 
 list:
-	go list -e -json -compiled=true -test=true -deps=true . | jq -C .
+	go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C .
 
 checkout:
 	mkdir -p extern
