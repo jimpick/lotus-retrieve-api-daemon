@@ -14,9 +14,11 @@ import (
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	record "github.com/libp2p/go-libp2p-record"
 
+	discoveryimpl "github.com/filecoin-project/go-fil-markets/discovery/impl"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/lib/peermgr"
+	"github.com/filecoin-project/lotus/node/config"
 	"github.com/filecoin-project/lotus/node/modules"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/modules/helpers"
@@ -109,10 +111,10 @@ func Repo(r repo.Repo) Option {
 			// Override(new(dtypes.ChainBlockstore), modules.ChainBlockstore),
 
 			Override(new(dtypes.ClientImportMgr), modules.ClientImportMgr),
-			Override(new(dtypes.ClientMultiDstore), rmodules.ClientMultiDatastore),
+			Override(new(dtypes.ClientMultiDstore), modules.ClientMultiDatastore),
 
 			Override(new(dtypes.ClientBlockstore), modules.ClientBlockstore),
-			Override(new(dtypes.ClientRetrievalStoreManager), rmodules.ClientRetrievalStoreManager),
+			Override(new(dtypes.ClientRetrievalStoreManager), modules.ClientRetrievalStoreManager),
 			Override(new(ci.PrivKey), lp2p.PrivKey),
 			Override(new(ci.PubKey), ci.PrivKey.GetPublic),
 			Override(new(peer.ID), peer.IDFromPublicKey),
@@ -225,7 +227,7 @@ func Online() Option {
 			Override(new(exchange.Server), exchange.NewServer),
 		*/
 		Override(new(*peermgr.PeerMgr), peermgr.NewPeerMgr),
-		Override(new(dtypes.Graphsync), rmodules.Graphsync),
+		Override(new(dtypes.Graphsync), modules.Graphsync(config.DefaultFullNode().Client.SimultaneousTransfers)),
 		/*
 			Override(new(*dtypes.MpoolLocker), new(dtypes.MpoolLocker)),
 
@@ -236,8 +238,8 @@ func Online() Option {
 		/*
 			Override(HandleIncomingBlocksKey, modules.HandleIncomingBlocks),
 		*/
-		Override(new(*discovery.Local), modules.NewLocalDiscovery),
-		Override(new(retrievalmarket.RetrievalClient), rmodules.RetrievalClient),
+		Override(new(*discoveryimpl.Local), modules.NewLocalDiscovery),
+		Override(new(retrievalmarket.RetrievalClient), modules.RetrievalClient),
 		Override(new(dtypes.ClientDatastore), modules.NewClientDatastore),
 		Override(new(dtypes.ClientDataTransfer), modules.NewClientGraphsyncDataTransfer),
 		/*
