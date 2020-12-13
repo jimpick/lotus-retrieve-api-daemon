@@ -9,7 +9,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/filecoin-project/go-jsonrpc"
-	lcli "github.com/filecoin-project/lotus/cli"
+	lcli "github.com/filecoin-project/lotus/cli/cmd"
 	"github.com/filecoin-project/lotus/node/modules/moduleapi"
 	"github.com/filecoin-project/lotus/node/repo"
 	"github.com/jimpick/lotus-retrieve-api-daemon/api"
@@ -38,8 +38,7 @@ var daemonCmd = &cli.Command{
 			return xerrors.Errorf("opening fs repo: %w", err)
 		}
 
-		// Re-use repo.Worker type as it has no config defaults
-		if err := r.Init(repo.Worker); err != nil && err != repo.ErrRepoExists {
+		if err := r.Init(repo.RetrieveAPI); err != nil && err != repo.ErrRepoExists {
 			return xerrors.Errorf("repo init error: %w", err)
 		}
 
