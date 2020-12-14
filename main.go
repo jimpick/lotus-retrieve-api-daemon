@@ -9,6 +9,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/filecoin-project/go-jsonrpc"
+	lapi "github.com/filecoin-project/lotus/api"
 	lcli "github.com/filecoin-project/lotus/cli/cmd"
 	"github.com/filecoin-project/lotus/node/modules/moduleapi"
 	"github.com/filecoin-project/lotus/node/repo"
@@ -48,7 +49,7 @@ var daemonCmd = &cli.Command{
 			node.RetrieveAPI(&retrieveAPI),
 			node.Repo(r),
 			node.Online(),
-			// node.Override(new(api.FullNode), nodeAPI),
+			node.Override(new(lapi.FullNode), nodeAPI),
 			// node.Override(new(payapi.PaychAPI), nodeAPI),
 			// node.Override(new(full.ChainAPI), nodeAPI),
 			// node.Override(new(full.StateForRetrievalAPI), rfull.StateForRetrievalAPI),

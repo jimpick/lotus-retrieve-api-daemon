@@ -14,9 +14,11 @@ import (
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	record "github.com/libp2p/go-libp2p-record"
 
+	"github.com/filecoin-project/go-fil-markets/discovery"
 	discoveryimpl "github.com/filecoin-project/go-fil-markets/discovery/impl"
 	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/lotus/chain/types"
+	"github.com/filecoin-project/lotus/journal"
 	"github.com/filecoin-project/lotus/lib/peermgr"
 	"github.com/filecoin-project/lotus/node/config"
 	"github.com/filecoin-project/lotus/node/modules"
@@ -239,6 +241,7 @@ func Online() Option {
 			Override(HandleIncomingBlocksKey, modules.HandleIncomingBlocks),
 		*/
 		Override(new(*discoveryimpl.Local), modules.NewLocalDiscovery),
+		Override(new(discovery.PeerResolver), modules.RetrievalResolver),
 		Override(new(retrievalmarket.RetrievalClient), modules.RetrievalClient),
 		Override(new(dtypes.ClientDatastore), modules.NewClientDatastore),
 		Override(new(dtypes.ClientDataTransfer), modules.NewClientGraphsyncDataTransfer),
@@ -332,22 +335,9 @@ func RetrieveAPI(out *api.RetrieveAPI) Option {
 
 func defaults() []Option {
 	return []Option{
-		/*
-			// global system journal.
-			Override(new(journal.DisabledEvents), func() journal.DisabledEvents {
-				if env, ok := os.LookupEnv(EnvJournalDisabledEvents); ok {
-					if ret, err := journal.ParseDisabledEvents(env); err == nil {
-						return ret
-					}
-				}
-				// fallback if env variable is not set, or if it failed to parse.
-				return journal.DefaultDisabledEvents
-			}),
-			Override(new(journal.Journal), modules.OpenFilesystemJournal),
-			Override(InitJournalKey, func(j journal.Journal) {
-				journal.J = j // eagerly sets the global journal through fx.Invoke.
-			}),
-		*/
+		// global system journal.
+		Override(new(journal.DisabledEvents), journal.EnvDisabledEvents),
+		Override(new(journal.Journal), modules.OpenFilesystemJournal),
 
 		Override(new(helpers.MetricsCtx), context.Background),
 		Override(new(record.Validator), modules.RecordValidator),
