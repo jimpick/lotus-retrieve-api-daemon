@@ -10,7 +10,10 @@ require (
 	github.com/filecoin-project/specs-actors v0.9.13 // indirect
 	github.com/ipfs/go-cid v0.0.7
 	github.com/ipfs/go-graphsync v0.5.1
+	github.com/jimpick/lotus-query-ask-api-daemon v0.0.0-20201218023526-5265063b5560
+	github.com/jimpick/lotus-utils v0.0.2
 	github.com/libp2p/go-libp2p-core v0.7.0
+	github.com/libp2p/go-libp2p-daemon v0.2.2
 	github.com/libp2p/go-libp2p-kad-dht v0.11.0
 	github.com/libp2p/go-libp2p-peerstore v0.2.6
 	github.com/libp2p/go-libp2p-record v0.1.3
