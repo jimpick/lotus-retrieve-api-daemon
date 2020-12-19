@@ -76,8 +76,9 @@ func Start(p2pclientNode *p2pclient.Client) {
 		Repo(r),
 		Online(),
 		Override(new(lp2p.BaseIpfsRouting), nilRouting),
-		Override(new(moduleapi.ChainModuleAPI), nodeAPI),
 		Override(new(moduleapi.StateModuleAPI), nodeAPI),
+		Override(new(moduleapi.ChainModuleAPI), nodeAPI),
+		Override(new(moduleapi.PaychModuleAPI), nodeAPI),
 		Override(new(*p2pclient.Client), p2pclientNode),
 	)
 	if err != nil {
