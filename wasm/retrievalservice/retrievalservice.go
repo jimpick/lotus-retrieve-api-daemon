@@ -43,6 +43,7 @@ import (
 	"github.com/filecoin-project/lotus/node/modules/helpers"
 
 	"github.com/jimpick/lotus-retrieve-api-daemon/node/impl"
+	rmodules "github.com/jimpick/lotus-retrieve-api-daemon/node/modules"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
@@ -180,11 +181,9 @@ func libp2p() Option {
 		Override(BaseRoutingKey, lp2p.BaseRouting),
 		Override(new(routing.Routing), lp2p.Routing),
 
-		Override(NatPortMapKey, lp2p.NatPortMap),
 		Override(BandwidthReporterKey, lp2p.BandwidthCounter),
 
 		Override(ConnectionManagerKey, lp2p.ConnectionManager(50, 200, 20*time.Second, nil)),
-		Override(AutoNATSvcKey, lp2p.AutoNATService),
 
 		Override(PstoreAddSelfKeysKey, lp2p.PstoreAddSelfKeys),
 	)
@@ -218,7 +217,7 @@ func Online() Option {
 func RetrieveAPI(out *api.RetrieveAPI) Option {
 	return Options(
 		func(s *Settings) error {
-			s.nodeType = repo.RetrieveAPI
+			s.NodeType = repo.RetrieveAPI
 			return nil
 		},
 		func(s *Settings) error {
