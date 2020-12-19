@@ -7,9 +7,14 @@ import (
 	"syscall/js"
 	"time"
 
+	"github.com/filecoin-project/go-fil-markets/discovery"
+	discoveryimpl "github.com/filecoin-project/go-fil-markets/discovery/impl"
+	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/go-jsonrpc"
 	lotusapi "github.com/filecoin-project/lotus/api"
 	"github.com/filecoin-project/lotus/api/apistruct"
+	"github.com/filecoin-project/lotus/journal"
+	"github.com/filecoin-project/lotus/node/config"
 	"github.com/filecoin-project/lotus/node/modules/lp2p"
 	"github.com/filecoin-project/lotus/node/modules/moduleapi"
 	"github.com/filecoin-project/lotus/node/repo"
@@ -27,13 +32,12 @@ import (
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	record "github.com/libp2p/go-libp2p-record"
 
-	"github.com/filecoin-project/go-fil-markets/storagemarket"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/lib/peermgr"
 
 	// _ "github.com/filecoin-project/lotus/lib/sigs/bls"
 	// _ "github.com/filecoin-project/lotus/lib/sigs/secp"
-	"github.com/filecoin-project/lotus/markets/storageadapter"
+
 	"github.com/filecoin-project/lotus/node/modules"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/modules/helpers"
@@ -141,7 +145,13 @@ func Repo(r repo.Repo) Option {
 		return Options(
 			Override(new(repo.LockedRepo), modules.LockedRepo(lr)), // module handles closing
 
-			// Override(new(dtypes.MetadataDS), modules.Datastore),
+			Override(new(dtypes.MetadataDS), modules.Datastore),
+
+			Override(new(dtypes.ClientImportMgr), modules.ClientImportMgr),
+			Override(new(dtypes.ClientMultiDstore), modules.ClientMultiDatastore),
+			Override(new(dtypes.ClientBlockstore), modules.ClientBlockstore),
+			Override(new(dtypes.ClientRetrievalStoreManager), modules.ClientRetrievalStoreManager),
+
 			Override(new(ci.PrivKey), lp2p.PrivKey),
 			Override(new(ci.PubKey), ci.PrivKey.GetPublic),
 			Override(new(peer.ID), peer.IDFromPublicKey),
@@ -193,16 +203,24 @@ func Online() Option {
 		libp2p(),
 
 		Override(new(dtypes.BootstrapPeers), modules.BuiltinBootstrap),
+		Override(new(dtypes.NetworkName), rmodules.NetworkName),
 		Override(new(*peermgr.PeerMgr), peermgr.NewPeerMgr),
+		Override(new(dtypes.Graphsync), modules.Graphsync(config.DefaultFullNode().Client.SimultaneousTransfers)),
 		Override(RunPeerMgrKey, modules.RunPeerMgr),
-		Override(new(storagemarket.StorageClient), modules.StorageClient),
-		Override(new(storagemarket.StorageClientNode), storageadapter.NewClientNodeAdapter),
-		Override(new(dtypes.NetworkName), modules.StorageNetworkName),
+		Override(new(*discoveryimpl.Local), modules.NewLocalDiscovery),
+		Override(new(discovery.PeerResolver), modules.RetrievalResolver),
+		Override(new(retrievalmarket.RetrievalClient), modules.RetrievalClient),
+		Override(new(dtypes.ClientDatastore), modules.NewClientDatastore),
+		Override(new(dtypes.ClientDataTransfer), modules.NewClientGraphsyncDataTransfer),
 	)
 }
 
 func RetrieveAPI(out *api.RetrieveAPI) Option {
 	return Options(
+		func(s *Settings) error {
+			s.nodeType = repo.RetrieveAPI
+			return nil
+		},
 		func(s *Settings) error {
 			resAPI := &impl.RetrieveAPI{}
 			s.Invokes[ExtractApiKey] = fx.Populate(resAPI)
@@ -214,8 +232,12 @@ func RetrieveAPI(out *api.RetrieveAPI) Option {
 
 func defaults() []Option {
 	return []Option{
+		Override(new(journal.DisabledEvents), journal.EnvDisabledEvents),
+		Override(new(journal.Journal), modules.OpenFilesystemJournal),
+
 		Override(new(helpers.MetricsCtx), context.Background),
 		Override(new(record.Validator), modules.RecordValidator),
+
 		Override(new(dtypes.Bootstrapper), dtypes.Bootstrapper(false)),
 	}
 }
