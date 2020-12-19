@@ -25,13 +25,13 @@ list:
 	go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C .
 
 list-wasm:
-	GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C .
+	cd wasm/bundlemain; GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C .
 
 why-ffi-wasm:
-	GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | in({"github.com/filecoin-project/filecoin-ffi": ""})) | .ImportPath'
+	cd wasm/bundlemain; GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | in({"github.com/filecoin-project/filecoin-ffi": ""})) | .ImportPath'
 
 why-badger-wasm:
-	GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | in({"github.com/dgraph-io/badger/v2": ""})) | .ImportPath'
+	cd wasm/bundlemain; GOOS=js GOARCH=wasm go list $(GOFLAGS) -e -json -compiled=true -test=true -deps=true . | jq -C '. | select(.Imports) | select(.Imports[] | in({"github.com/dgraph-io/badger/v2": ""})) | .ImportPath'
 
 
 checkout:

@@ -27,11 +27,9 @@ replace github.com/filecoin-project/lotus => ./extern/lotus-modified
 
 replace github.com/filecoin-project/go-fil-markets => ./extern/go-fil-markets-modified
 
-replace github.com/supranational/blst => ./extern/lotus-old/extern/fil-blst/blst
+replace github.com/supranational/blst => ./extern/lotus-modified/extern/blst
 
-replace github.com/filecoin-project/fil-blst => ./extern/lotus-old/extern/fil-blst
-
-replace github.com/filecoin-project/filecoin-ffi => ./extern/lotus-old/extern/filecoin-ffi
+replace github.com/filecoin-project/filecoin-ffi => ./extern/lotus-modified/extern/filecoin-ffi
 
 replace github.com/libp2p/go-libp2p => github.com/jimpick/go-libp2p v0.3.2-0.20201217033239-c003a802f4a7
 

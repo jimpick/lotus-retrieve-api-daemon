@@ -30,3 +30,4 @@ DATA="{ \"jsonrpc\": \"2.0\", \"method\": \"Filecoin.ClientRetrieve\", \"params\
 curl -X POST -H "Content-Type: application/json" \
        	--data "$DATA" \
        	'http://127.0.0.1:1238/rpc/v0' 
+ls -lh $DEST
