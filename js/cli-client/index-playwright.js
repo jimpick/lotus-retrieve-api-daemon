@@ -37,9 +37,8 @@ async function run () {
     waitForResult()
   }
 
-  /*
-  const wasmQueryAskServiceProvider = new WasmProvider(
-    global.connectQueryAskService,
+  const wasmRetrievalServiceProvider = new WasmProvider(
+    global.connectRetrievalService,
     {
       environment: {
         requestsForLotusHandler
@@ -47,21 +46,38 @@ async function run () {
     }
   )
 
-  const queryAskClient = new LotusRPC(wasmQueryAskServiceProvider, {
+  const retrieveClient = new LotusRPC(wasmRetrievalServiceProvider, {
     schema: mainnet.fullNode
   })
 
-  console.log('Query Ask WSS')
-  const result = await queryAskClient.clientQueryAsk(
-    '12D3KooWEUS7VnaRrHF24GTWVGYtcEsmr3jsnNLcsEwPU7rDgjf5',
-    'f063655'
+  const order = {
+    "Root": {
+      "/": "bafykbzaced3v6jdz436uh2shndde7nwmjlmp6riomr6ps3fbapvaqb6dqpi2o"
+    },
+    "Piece": null,
+    "Size": 8388608,
+    "Total": "16777216",
+    "UnsealPrice": "0",
+    "PaymentInterval": 104857600,
+    "PaymentIntervalIncrease": 104857600,
+    "Client": "t3qkztmkfopk63qsel2xk3ek4w22epn3jnnlubnwjha2sl7rjhiuduwx24xivmhtdz7st3zmteuemeefply55q",
+    "Miner": "f07281",
+    "MinerPeer": {
+      "Address": "f07283",
+      "ID": "12D3KooWAU1x4P8XGCWyQBAapXXoGyom4Bx5QHnH4zQSeTqzMyQP",
+      "PieceCID": null
+    }
+  }
+  const fileref =  {
+    "Path": "/tmp/wiki.zip.aa.aa-" + Math.random() * 100000000,
+    "IsCAR": false
+  } 
+  console.log('Retrieve WSS')
+  const result = await retrieveClient.clientRetrieve(
+    order,
+    fileref
   )
-  //const result = await queryAskClient.clientQueryAsk(
-  //  '12D3KooWHeqPF4yLunXpxaZyf8z4WbgK12YcYYeYLB5HEeQGaxAk',
-  //  'f0105208'
-  //)
-  console.log(`Query Ask WSS: ${JSON.stringify(result)}`)
-  */
+  console.log(`Retrieve WSS: ${JSON.stringify(result)}`)
 }
 run()
 
