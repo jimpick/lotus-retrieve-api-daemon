@@ -1,59 +1,122 @@
-package node
+package retrievalservice
 
 import (
 	"context"
 	"errors"
+	"fmt"
+	"syscall/js"
 	"time"
+
+	"github.com/filecoin-project/go-fil-markets/discovery"
+	discoveryimpl "github.com/filecoin-project/go-fil-markets/discovery/impl"
+	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
+	"github.com/filecoin-project/go-jsonrpc"
+	lotusapi "github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/apistruct"
+	"github.com/filecoin-project/lotus/journal"
+	"github.com/filecoin-project/lotus/node/config"
+	"github.com/filecoin-project/lotus/node/modules/lp2p"
+	"github.com/filecoin-project/lotus/node/modules/moduleapi"
+	"github.com/filecoin-project/lotus/node/repo"
+	"github.com/jimpick/lotus-retrieve-api-daemon/api"
+	. "github.com/jimpick/lotus-utils/fxnodesetup"
+	"github.com/libp2p/go-libp2p-daemon/p2pclient"
 
 	ci "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
 	"github.com/libp2p/go-libp2p-core/routing"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
+
+	// dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	record "github.com/libp2p/go-libp2p-record"
 
-	"github.com/filecoin-project/go-fil-markets/discovery"
-	discoveryimpl "github.com/filecoin-project/go-fil-markets/discovery/impl"
-	"github.com/filecoin-project/go-fil-markets/retrievalmarket"
 	"github.com/filecoin-project/lotus/chain/types"
-	"github.com/filecoin-project/lotus/journal"
 	"github.com/filecoin-project/lotus/lib/peermgr"
-	"github.com/filecoin-project/lotus/node/config"
+
+	// _ "github.com/filecoin-project/lotus/lib/sigs/bls"
+	// _ "github.com/filecoin-project/lotus/lib/sigs/secp"
+
 	"github.com/filecoin-project/lotus/node/modules"
 	"github.com/filecoin-project/lotus/node/modules/dtypes"
 	"github.com/filecoin-project/lotus/node/modules/helpers"
-	"github.com/filecoin-project/lotus/node/modules/lp2p"
-	"github.com/filecoin-project/lotus/node/repo"
-	"github.com/jimpick/lotus-retrieve-api-daemon/api"
+
 	"github.com/jimpick/lotus-retrieve-api-daemon/node/impl"
 	rmodules "github.com/jimpick/lotus-retrieve-api-daemon/node/modules"
 	"go.uber.org/fx"
 	"golang.org/x/xerrors"
 )
 
-// From node/builder.go
+var jsHandler js.Value
 
-// special is a type used to give keys to modules which
-//  can't really be identified by the returned type
-type special struct{ id int }
+func Start(p2pclientNode *p2pclient.Client) {
+	var retrieveAPI api.RetrieveAPI
 
-type invoke int
+	ctx := context.Background()
+
+	r := repo.NewMemory(nil)
+
+	nilRouting, err := lp2p.NilRouting(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	var fullNodeStruct = apistruct.FullNodeStruct{}
+	var nodeAPI lotusapi.FullNode = &fullNodeStruct
+	var closer jsonrpc.ClientCloser
+	defer func() {
+		if closer != nil {
+			closer()
+		}
+	}()
+
+	_, err = New(ctx,
+		RetrieveAPI(&retrieveAPI),
+		Repo(r),
+		Online(),
+		Override(new(lp2p.BaseIpfsRouting), nilRouting),
+		Override(new(moduleapi.StateModuleAPI), nodeAPI),
+		Override(new(moduleapi.ChainModuleAPI), nodeAPI),
+		Override(new(moduleapi.PaychModuleAPI), nodeAPI),
+		Override(new(*p2pclient.Client), p2pclientNode),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	cbOpt := jsonrpc.WithConnectCallback(func(environment js.Value) {
+		fmt.Printf("Jim retrievalservice connectCallBack\n")
+		requestsForLotusHandler := environment.Get("requestsForLotusHandler")
+
+		// closer, err := jsonrpc.NewJSMergeClient(context.Background(), requestsForLotusHandler, "Filecoin", []interface{}{&nodeAPI})
+		closer, err = jsonrpc.NewJSMergeClient(context.Background(), requestsForLotusHandler, "Filecoin",
+			[]interface{}{
+				&fullNodeStruct.CommonStruct.Internal,
+				&fullNodeStruct.Internal,
+			})
+		if err != nil {
+			fmt.Printf("connecting with lotus failed: %s\n", err)
+			panic(err)
+		}
+	})
+	rpcServer := jsonrpc.NewJSServer("connectRetrievalService", cbOpt)
+	rpcServer.Register("Filecoin", retrieveAPI)
+}
 
 //nolint:golint
 var (
-	DefaultTransportsKey = special{0}  // Libp2p option
-	DiscoveryHandlerKey  = special{2}  // Private type
-	AddrsFactoryKey      = special{3}  // Libp2p option
-	SmuxTransportKey     = special{4}  // Libp2p option
-	RelayKey             = special{5}  // Libp2p option
-	SecurityKey          = special{6}  // Libp2p option
-	BaseRoutingKey       = special{7}  // fx groups + multiret
-	NatPortMapKey        = special{8}  // Libp2p option
-	ConnectionManagerKey = special{9}  // Libp2p option
-	AutoNATSvcKey        = special{10} // Libp2p option
-	BandwidthReporterKey = special{11} // Libp2p option
+	DefaultTransportsKey = Special{0}  // Libp2p option
+	DiscoveryHandlerKey  = Special{2}  // Private type
+	AddrsFactoryKey      = Special{3}  // Libp2p option
+	SmuxTransportKey     = Special{4}  // Libp2p option
+	RelayKey             = Special{5}  // Libp2p option
+	SecurityKey          = Special{6}  // Libp2p option
+	BaseRoutingKey       = Special{7}  // fx groups + multiret
+	NatPortMapKey        = Special{8}  // Libp2p option
+	ConnectionManagerKey = Special{9}  // Libp2p option
+	AutoNATSvcKey        = Special{10} // Libp2p option
+	BandwidthReporterKey = Special{11} // Libp2p option
 )
 
 // Invokes are called in the order they are defined.
@@ -61,7 +124,7 @@ var (
 const (
 	// InitJournal at position 0 initializes the journal global var as soon as
 	// the system starts, so that it's available for all other components.
-	InitJournalKey = invoke(iota)
+	InitJournalKey = Invoke(iota)
 
 	// libp2p
 
@@ -74,28 +137,9 @@ const (
 	_nInvokes // keep this last
 )
 
-type Settings struct {
-	// modules is a map of constructors for DI
-	//
-	// In most cases the index will be a reflect. Type of element returned by
-	// the constructor, but for some 'constructors' it's hard to specify what's
-	// the return type should be (or the constructor returns fx group)
-	modules map[interface{}]fx.Option
-
-	// invokes are separate from modules as they can't be referenced by return
-	// type, and must be applied in correct order
-	invokes []fx.Option
-
-	nodeType repo.RepoType
-
-	Online bool // Online option applied
-	Config bool // Config option applied
-
-}
-
 func Repo(r repo.Repo) Option {
 	return func(settings *Settings) error {
-		lr, err := r.Lock(settings.nodeType)
+		lr, err := r.Lock(settings.NodeType)
 		if err != nil {
 			return err
 		}
@@ -127,7 +171,7 @@ func libp2p() Option {
 
 		Override(new(lp2p.RawHost), lp2p.Host),
 		Override(new(host.Host), lp2p.RoutedHost),
-		Override(new(lp2p.BaseIpfsRouting), lp2p.DHTRouting(dht.ModeAuto)),
+		// Override(new(lp2p.BaseIpfsRouting), lp2p.DHTRouting(dht.ModeAuto)),
 
 		Override(DiscoveryHandlerKey, lp2p.DiscoveryHandler),
 		Override(AddrsFactoryKey, lp2p.AddrsFactory(nil, nil)),
@@ -138,11 +182,9 @@ func libp2p() Option {
 		Override(BaseRoutingKey, lp2p.BaseRouting),
 		Override(new(routing.Routing), lp2p.Routing),
 
-		Override(NatPortMapKey, lp2p.NatPortMap),
 		Override(BandwidthReporterKey, lp2p.BandwidthCounter),
 
 		Override(ConnectionManagerKey, lp2p.ConnectionManager(50, 200, 20*time.Second, nil)),
-		Override(AutoNATSvcKey, lp2p.AutoNATService),
 
 		Override(PstoreAddSelfKeysKey, lp2p.PstoreAddSelfKeys),
 	)
@@ -176,12 +218,12 @@ func Online() Option {
 func RetrieveAPI(out *api.RetrieveAPI) Option {
 	return Options(
 		func(s *Settings) error {
-			s.nodeType = repo.RetrieveAPI
+			s.NodeType = repo.RetrieveAPI
 			return nil
 		},
 		func(s *Settings) error {
 			resAPI := &impl.RetrieveAPI{}
-			s.invokes[ExtractApiKey] = fx.Populate(resAPI)
+			s.Invokes[ExtractApiKey] = fx.Populate(resAPI)
 			*out = resAPI
 			return nil
 		},
@@ -190,9 +232,8 @@ func RetrieveAPI(out *api.RetrieveAPI) Option {
 
 func defaults() []Option {
 	return []Option{
-		// global system journal.
 		Override(new(journal.DisabledEvents), journal.EnvDisabledEvents),
-		Override(new(journal.Journal), modules.OpenFilesystemJournal),
+		Override(new(journal.Journal), modules.OpenNilJournal),
 
 		Override(new(helpers.MetricsCtx), context.Background),
 		Override(new(record.Validator), modules.RecordValidator),
@@ -206,8 +247,8 @@ type StopFunc func(context.Context) error
 // New builds and starts new Filecoin node
 func New(ctx context.Context, opts ...Option) (StopFunc, error) {
 	settings := Settings{
-		modules: map[interface{}]fx.Option{},
-		invokes: make([]fx.Option, _nInvokes),
+		Modules: map[interface{}]fx.Option{},
+		Invokes: make([]fx.Option, _nInvokes),
 	}
 
 	// apply module options in the right order
@@ -216,21 +257,21 @@ func New(ctx context.Context, opts ...Option) (StopFunc, error) {
 	}
 
 	// gather constructors for fx.Options
-	ctors := make([]fx.Option, 0, len(settings.modules))
-	for _, opt := range settings.modules {
+	ctors := make([]fx.Option, 0, len(settings.Modules))
+	for _, opt := range settings.Modules {
 		ctors = append(ctors, opt)
 	}
 
 	// fill holes in invokes for use in fx.Options
-	for i, opt := range settings.invokes {
+	for i, opt := range settings.Invokes {
 		if opt == nil {
-			settings.invokes[i] = fx.Options()
+			settings.Invokes[i] = fx.Options()
 		}
 	}
 
 	app := fx.New(
 		fx.Options(ctors...),
-		fx.Options(settings.invokes...),
+		fx.Options(settings.Invokes...),
 
 		fx.NopLogger,
 	)
