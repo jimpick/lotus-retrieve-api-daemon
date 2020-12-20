@@ -38,3 +38,7 @@ replace github.com/libp2p/go-libp2p-daemon => ../../../../browser-markets/go-lib
 replace github.com/libp2p/go-ws-transport => ../../../../browser-markets/go-ws-transport-0xproject-feat-wss-dialing
 
 replace github.com/multiformats/go-multiaddr => github.com/jimpick/go-multiaddr v0.3.2-0.20201116042404-3634c019a1d6
+
+replace github.com/spf13/afero => ../../../afero
+
+replace github.com/filecoin-project/go-data-transfer => ../../extern/go-data-transfer-modified

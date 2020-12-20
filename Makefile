@@ -38,6 +38,8 @@ checkout:
 	mkdir -p extern
 	cd extern; git clone -b jim-retrieve-api-daemon-modified git@github.com:jimpick/lotus.git lotus-modified
 	cd extern; git clone -b jim-retrieve-api-daemon-modified git@github.com:jimpick/go-fil-markets.git go-fil-markets-modified
+	cd extern; git clone -b jim-retrieve-api-daemon-modified git@github.com:jimpick/go-data-transfer.git go-data-transfer-modified
+	cd extern; git clone -b jim-retrieve-api-daemon-modified git@github.com:jimpick/go-graphsync.git go-graphsync-modified
 
 run:
 	go run . daemon

@@ -233,7 +233,7 @@ func RetrieveAPI(out *api.RetrieveAPI) Option {
 func defaults() []Option {
 	return []Option{
 		Override(new(journal.DisabledEvents), journal.EnvDisabledEvents),
-		Override(new(journal.Journal), modules.OpenFilesystemJournal),
+		Override(new(journal.Journal), modules.OpenNilJournal),
 
 		Override(new(helpers.MetricsCtx), context.Background),
 		Override(new(record.Validator), modules.RecordValidator),
