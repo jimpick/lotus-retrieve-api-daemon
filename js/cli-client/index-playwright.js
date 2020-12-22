@@ -23,15 +23,15 @@ async function run () {
   // console.log('Sleeping...')
   // await delay(3000)
 
-  const wsUrl = 'wss://lotus.jimpick.com/spacerace_api/1/node/rpc/v0'
+  const wsUrl = 'wss://lotus.jimpick.com/calibration_api/0/node/rpc/v0'
   const browserProvider = new BrowserProvider(wsUrl)
   await browserProvider.connect()
   const requestsForLotusHandler = async (req, responseHandler) => {
     const request = JSON.parse(req)
-    console.log('JSON-RPC request => Lotus', request)
+    console.log('JSON-RPC request => Lotus', JSON.stringify(request))
     async function waitForResult () {
       const result = await browserProvider.sendWs(request)
-      console.log('Jim result', result)
+      console.log('Jim result', JSON.stringify(result))
       responseHandler(JSON.stringify(result))
     }
     waitForResult()
