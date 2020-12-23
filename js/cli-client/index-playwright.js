@@ -24,15 +24,24 @@ async function run () {
   // await delay(3000)
 
   const wsUrl = 'wss://lotus.jimpick.com/calibration_api/0/node/rpc/v0'
-  const browserProvider = new BrowserProvider(wsUrl)
+  const browserProvider = new BrowserProvider(wsUrl, {
+    token: async () => {
+      const response = await fetch('/token')
+      return await response.text()
+    }
+  })
   await browserProvider.connect()
   const requestsForLotusHandler = async (req, responseHandler) => {
     const request = JSON.parse(req)
     console.log('JSON-RPC request => Lotus', JSON.stringify(request))
     async function waitForResult () {
-      const result = await browserProvider.sendWs(request)
-      console.log('Jim result', JSON.stringify(result))
-      responseHandler(JSON.stringify(result))
+      try {
+        const result = await browserProvider.sendWs(request)
+        console.log('Jim result', JSON.stringify(result))
+        responseHandler(JSON.stringify(result))
+      } catch (e) {
+        console.error('JSON-RPC error', e.message)
+      }
     }
     waitForResult()
   }

@@ -11,9 +11,15 @@ const app = express()
 const config = require('./webpack.config.js')
 const compiler = webpack(config)
 
+require('dotenv').config()
+
 const bundleFile = path.resolve('../../wasm/bundlemain/main.wasm')
 app.get('/main.wasm', (req, res) => {
   res.sendFile(bundleFile)
+})
+
+app.get('/token', (req, res) => {
+  res.send(process.env.TOKEN)
 })
 
 // Tell express to use the webpack-dev-middleware and use the webpack.config.js

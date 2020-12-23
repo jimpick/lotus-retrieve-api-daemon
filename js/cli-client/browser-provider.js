@@ -94,6 +94,7 @@ class BrowserProvider {
   }
 
   sendWs (jsonRpcRequest) {
+    console.log('browser-provider sendWs', JSON.stringify(jsonRpcRequest))
     const promise = new Promise((resolve, reject) => {
       if (this.destroyed) {
         reject(new Error('WebSocket has already been destroyed'))
@@ -168,9 +169,9 @@ class BrowserProvider {
   }
 
   receive (event) {
+    console.log('Jim browser-provider receive', JSON.stringify(event.data))
     try {
       const { id, error, result, method, params } = JSON.parse(event.data)
-      // FIXME: Check return code, errors
       if (method === 'xrpc.ch.val') {
         // FIXME: Check return code, errors
         const [chanId, data] = params
@@ -205,6 +206,14 @@ class BrowserProvider {
         if (cb) {
           this.inflight.delete(id)
           if (error) {
+            // Example error: {
+            //   "jsonrpc":"2.0",
+            //   "id":4,
+            //   "error": {
+            //     "code": 1,
+            //     "message": "missing permission to invoke 'PaychGet' (need 'sign')"
+            //   }
+            // }
             // FIXME: Return error class with error.code
             return cb(new Error(error.message))
           }
