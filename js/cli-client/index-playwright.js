@@ -59,33 +59,34 @@ async function run () {
     schema: mainnet.fullNode
   })
 
+  const cid =
+    'bafyaa4asfyfcmakvudsaeiaxi25hifvrnuwwqh5kl3hn7zysxdimchuxnllbrvzbbhn2my7boijaageaqbabelqkeyavliheaiqoizfeekow64ww6ibex2q62au7dstwjrtjpjwih4yx357q3s5pvqasaamj3zjdbihaqaqytxswgieaqbacbhpfem' // seal.jpg
+  // const cid = 'bafykbzaced3v6jdz436uh2shndde7nwmjlmp6riomr6ps3fbapvaqb6dqpi2o' // wikipedia chunk
   const order = {
-    "Root": {
-      "/": "bafykbzaced3v6jdz436uh2shndde7nwmjlmp6riomr6ps3fbapvaqb6dqpi2o"
+    Root: {
+      '/': cid
     },
-    "Piece": null,
-    "Size": 8388608,
-    "Total": "16777216",
-    "UnsealPrice": "0",
-    "PaymentInterval": 104857600,
-    "PaymentIntervalIncrease": 104857600,
-    "Client": "t3qkztmkfopk63qsel2xk3ek4w22epn3jnnlubnwjha2sl7rjhiuduwx24xivmhtdz7st3zmteuemeefply55q",
-    "Miner": "f07281",
-    "MinerPeer": {
-      "Address": "f07283",
-      "ID": "12D3KooWAU1x4P8XGCWyQBAapXXoGyom4Bx5QHnH4zQSeTqzMyQP",
-      "PieceCID": null
+    Piece: null,
+    Size: 8388608,
+    Total: '16777216',
+    UnsealPrice: '0',
+    PaymentInterval: 104857600,
+    PaymentIntervalIncrease: 104857600,
+    Client:
+      't3qkztmkfopk63qsel2xk3ek4w22epn3jnnlubnwjha2sl7rjhiuduwx24xivmhtdz7st3zmteuemeefply55q',
+    Miner: 'f07281',
+    MinerPeer: {
+      Address: 'f07283',
+      ID: '12D3KooWAU1x4P8XGCWyQBAapXXoGyom4Bx5QHnH4zQSeTqzMyQP',
+      PieceCID: null
     }
   }
-  const fileref =  {
-    "Path": "/tmp/wiki.zip.aa.aa-" + Math.random() * 100000000,
-    "IsCAR": false
-  } 
+  const fileref = {
+    Path: '/tmp/wiki.zip.aa.aa-' + Math.random() * 100000000,
+    IsCAR: false
+  }
   console.log('Retrieve WSS')
-  const result = await retrieveClient.clientRetrieve(
-    order,
-    fileref
-  )
+  const result = await retrieveClient.clientRetrieve(order, fileref)
   console.log(`Retrieve WSS: ${JSON.stringify(result)}`)
 }
 run()
