@@ -4,8 +4,9 @@
   "description": "",
   "main": "wasm_exec.js",
   "scripts": {
-    "test": "node server-playwright.js",
-    "test-node": "node index-node.js"
+    "test": "rm -f screenshot.png; node server-playwright.js",
+    "test-node": "node index-node.js",
+    "clean": "rm -f screenshot.png"
   },
   "keywords": [],
   "author": "Jim Pick (@jimpick)",

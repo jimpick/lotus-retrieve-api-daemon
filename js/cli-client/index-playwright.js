@@ -86,8 +86,18 @@ async function run () {
     IsCAR: false
   }
   console.log('Retrieve WSS')
-  const result = await retrieveClient.clientRetrieve(order, fileref)
-  console.log(`Retrieve WSS: ${JSON.stringify(result)}`)
+  const fileDepositId = await retrieveClient.clientRetrieve(order, fileref)
+  console.log(`Retrieve WSS FileDepositID: ${JSON.stringify(fileDepositId)}`)
+  console.log(`window.collectFileDeposit`, window.collectFileDeposit)
+  const fileData = window.collectFileDeposit(fileDepositId)
+  console.log(`fileData`, fileData)
+  const blob = new Blob([fileData], {'type': 'image/jpeg'})
+  const url = URL.createObjectURL(blob)
+  const imgEl = document.createElement('img')
+  imgEl.src = url
+  imgEl.width = 500
+  document.body.appendChild(imgEl)
+  console.log('Retrieve WSS Success')
 }
 run()
 

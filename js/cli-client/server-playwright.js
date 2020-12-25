@@ -40,11 +40,13 @@ async function run () {
   // const browser = await chromium.launch({ headless: false })
   const browser = await chromium.launch()
   const page = await browser.newPage()
-  page.on('console', msg => {
+  page.on('console', async msg => {
     for (let i = 0; i < msg.args().length; ++i) {
       const line = `${msg.args()[i]}`
       console.log(`${i}: ${line}`)
-      if (line.match(/Query Ask WSS:/)) {
+      if (line.match(/Retrieve WSS Success/)) {
+        await page.screenshot({ path: `screenshot.png` });
+        await browser.close()
         process.exit(0)
       }
     }

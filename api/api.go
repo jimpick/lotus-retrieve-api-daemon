@@ -18,7 +18,7 @@ type RetrieveAPI interface {
 	// ClientMinerQueryOffer returns a QueryOffer for the specific miner and file.
 	ClientMinerQueryOffer(ctx context.Context, miner address.Address, root cid.Cid, piece *cid.Cid) (lapi.QueryOffer, error)
 	// ClientRetrieve initiates the retrieval of a file, as specified in the order.
-	ClientRetrieve(ctx context.Context, order lapi.RetrievalOrder, ref *lapi.FileRef) error
+	ClientRetrieve(ctx context.Context, order lapi.RetrievalOrder, ref *lapi.FileRef) (int, error)
 	// ClientRetrieveWithEvents initiates the retrieval of a file, as specified in the order, and provides a channel
 	// of status updates.
 	ClientRetrieveWithEvents(ctx context.Context, order lapi.RetrievalOrder, ref *lapi.FileRef) (<-chan marketevents.RetrievalEvent, error)
