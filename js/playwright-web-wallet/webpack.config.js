@@ -8,11 +8,23 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 module.exports = {
   mode: 'development',
   entry: {
-    index: './index-playwright.js'
+    index: './index-playwright.ts'
   },
   devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [ '.tsx', '.ts', '.js' ],
   },
   plugins: [
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
