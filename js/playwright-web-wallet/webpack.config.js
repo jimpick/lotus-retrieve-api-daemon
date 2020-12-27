@@ -4,6 +4,7 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
 
 module.exports = {
   mode: 'development',
@@ -31,7 +32,8 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Development'
     }),
-    new AddAssetHtmlPlugin({ filepath: require.resolve('./wasm_exec.js') })
+    new AddAssetHtmlPlugin({ filepath: require.resolve('./wasm_exec.js') }),
+    new Dotenv(),
   ],
   output: {
     filename: '[name].bundle.js',

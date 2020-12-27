@@ -5,6 +5,7 @@ const { BrowserProvider } = require('./browser-provider')
 const { WasmProvider } = require('./wasm-provider')
 
 async function run () {
+  console.log('WALLET_1', process.env.WALLET_1)
   console.log('Starting WASM...')
   const go = new Go()
   try {
@@ -46,6 +47,7 @@ async function run () {
     waitForResult()
   }
 
+  /*
   const wasmRetrievalServiceProvider = new WasmProvider(
     global.connectRetrievalService,
     {
@@ -98,6 +100,7 @@ async function run () {
   imgEl.width = 500
   document.body.appendChild(imgEl)
   console.log('Retrieve WSS Success')
+  */
 }
 run()
 
