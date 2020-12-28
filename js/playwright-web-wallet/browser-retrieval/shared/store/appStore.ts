@@ -41,7 +41,7 @@ export class AppStore {
     this.optionsStore = new OptionsStore(this)
     // this.queriesStore = new QueriesStore(this)
     // this.recentCIDStore = new RecentCIDStore(this)
-    // this.settingsStore = new SettingsStore(this)
+    this.settingsStore = new SettingsStore(this)
     // this.uploadStore = new UploadStore(this)
     // this.pchStore = new PCHStore(this)
 

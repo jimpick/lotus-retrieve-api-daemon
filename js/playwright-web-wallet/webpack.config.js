@@ -42,6 +42,6 @@ module.exports = {
     publicPath: '/'
   },
   experiments: {
-    asyncWebAssembly: true,
+    syncWebAssembly: true,
   }
 }
