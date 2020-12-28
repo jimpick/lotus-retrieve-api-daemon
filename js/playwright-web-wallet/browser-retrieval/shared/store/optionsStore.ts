@@ -1,5 +1,5 @@
 import { makeAutoObservable, remove, set } from 'mobx'
-import { autosave } from 'shared/autoSaveDecorator'
+// import { autosave } from 'shared/autoSaveDecorator'
 
 import { AppStore } from './appStore'
 
@@ -44,6 +44,7 @@ export class OptionsStore {
     makeAutoObservable(this)
   }
 
+  /*
   @autosave
   addKnownCid(cid: string, size: any) {
     set(this.knownCids, cid, { size })
@@ -67,4 +68,5 @@ export class OptionsStore {
   removePrice(cid: any) {
     remove(this.pricesPerByte, cid)
   }
+  */
 }

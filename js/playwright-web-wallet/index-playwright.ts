@@ -3,9 +3,14 @@ const { LotusRPC } = require('@filecoin-shipyard/lotus-client-rpc')
 const { mainnet } = require('@filecoin-shipyard/lotus-client-schema')
 const { BrowserProvider } = require('./browser-provider')
 const { WasmProvider } = require('./wasm-provider')
+// const { Lotus } = require('./browser-retrieval/shared/lotus-client/Lotus')
+
+declare const Go: any
 
 async function run () {
-  console.log('WALLET_1', process.env.WALLET_1)
+  // Initialize Lotus client and filecoin-signing-tools from browser-retrieval
+  // const lotus = await Lotus.create()
+
   console.log('Starting WASM...')
   const go = new Go()
   try {
@@ -18,7 +23,6 @@ async function run () {
     console.error('Error', e)
   }
   await delay(500) // FIXME: Get rid of this
-  status.innerText = 'All systems good! JS and Go loaded.'
   console.log('All systems go!')
 
   // console.log('Sleeping...')

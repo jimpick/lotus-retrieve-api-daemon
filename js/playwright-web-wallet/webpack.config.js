@@ -8,6 +8,7 @@ const Dotenv = require('dotenv-webpack')
 
 module.exports = {
   mode: 'development',
+  target: 'web',
   entry: {
     index: './index-playwright.ts'
   },
@@ -39,5 +40,8 @@ module.exports = {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/'
+  },
+  experiments: {
+    asyncWebAssembly: true,
   }
 }

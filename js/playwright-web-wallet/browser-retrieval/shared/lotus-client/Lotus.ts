@@ -2,7 +2,7 @@ import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import inspect from 'browser-util-inspect'
 import { Buffer } from 'buffer'
-import { appStore } from 'shared/store/appStore'
+import { appStore } from '../store/appStore'
 
 // Required to workaround `Invalid asm.js: Unexpected token` error:
 const importDagCBOR = () => {
@@ -401,9 +401,11 @@ export class Lotus {
       return
     }
 
+    /*
     appStore.dealsStore.setInboundDealProps(deal.id, {
       customStatus: str,
     })
+    */
   }
 
   async createPaymentChannel({ deal, toAddr, pchAmount }) {

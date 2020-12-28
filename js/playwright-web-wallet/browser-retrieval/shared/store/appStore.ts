@@ -1,49 +1,49 @@
 import { makeAutoObservable } from 'mobx'
-import { Node } from 'shared/Node'
+// import { Node } from 'shared/Node'
 
-import { AlertsStore } from './alertsStore'
-import { DealsStore } from './dealsStore'
+// import { AlertsStore } from './alertsStore'
+// import { DealsStore } from './dealsStore'
 import { LogsStore } from './logsStore'
-import { OffersStore } from './offersStore'
-import { OperationsStore } from './operationsStore'
+// import { OffersStore } from './offersStore'
+// import { OperationsStore } from './operationsStore'
 import { OptionsStore } from './optionsStore'
-import { QueriesStore } from './queriesStore'
-import { RecentCIDStore } from './recentCIDStore'
+// import { QueriesStore } from './queriesStore'
+// import { RecentCIDStore } from './recentCIDStore'
 import { SettingsStore } from './settingsStore'
-import { UploadStore } from './uploadStore'
-import { PCHStore } from './pchStore'
+// import { UploadStore } from './uploadStore'
+// import { PCHStore } from './pchStore'
 
 export class AppStore {
-  alertsStore: AlertsStore
-  dealsStore: DealsStore
+  // alertsStore: AlertsStore
+  // dealsStore: DealsStore
   logsStore: LogsStore
-  offersStore: OffersStore
-  operationsStore: OperationsStore
+  // offersStore: OffersStore
+  // operationsStore: OperationsStore
   optionsStore: OptionsStore
-  queriesStore: QueriesStore
-  recentCIDStore: RecentCIDStore
+  // queriesStore: QueriesStore
+  // recentCIDStore: RecentCIDStore
   settingsStore: SettingsStore
-  uploadStore: UploadStore
-  pchStore: PCHStore
+  // uploadStore: UploadStore
+  // pchStore: PCHStore
 
-  node: Node
+  // node: Node
 
   connected = false
 
-  connectedPeers = []
+  // connectedPeers = []
 
   constructor() {
-    this.alertsStore = new AlertsStore(this)
-    this.dealsStore = new DealsStore(this)
+    // this.alertsStore = new AlertsStore(this)
+    // this.dealsStore = new DealsStore(this)
     this.logsStore = new LogsStore(this)
-    this.offersStore = new OffersStore(this)
-    this.operationsStore = new OperationsStore(this)
+    // this.offersStore = new OffersStore(this)
+    // this.operationsStore = new OperationsStore(this)
     this.optionsStore = new OptionsStore(this)
-    this.queriesStore = new QueriesStore(this)
-    this.recentCIDStore = new RecentCIDStore(this)
-    this.settingsStore = new SettingsStore(this)
-    this.uploadStore = new UploadStore(this)
-    this.pchStore = new PCHStore(this)
+    // this.queriesStore = new QueriesStore(this)
+    // this.recentCIDStore = new RecentCIDStore(this)
+    // this.settingsStore = new SettingsStore(this)
+    // this.uploadStore = new UploadStore(this)
+    // this.pchStore = new PCHStore(this)
 
     makeAutoObservable(this)
   }
@@ -55,17 +55,20 @@ export class AppStore {
       try {
         await this.tryDisconnect()
 
-        this.node = await Node.create(true)
-        this.connected = true
+        // this.node = await Node.create(true)
+        // this.connected = true
 
-        const mimBalance = await this.node.lotus.hasMinBalance()
+        /*
+        const mimBalance = await this.lotus.hasMinBalance()
 
         if (!mimBalance) {
+          console.error('Mimbalance')
           this.alertsStore.create({
             message: 'Your wallet does not have minimum FIL required!',
             type: 'warning',
           })
         }
+        */
       } catch (error) {
         this.connected = false
 
@@ -82,13 +85,14 @@ export class AppStore {
 
   private async tryDisconnect() {
     try {
-      await this.node?.stop()
+      // await this.node?.stop()
       this.connected = false
     } catch (err) {
       this.logsStore.logDebug(`stop node failed: ${err.message}`)
     }
   }
 
+  /*
   query({ cid, minerID }) {
     this.node.query(cid, minerID)
   }
@@ -112,6 +116,7 @@ export class AppStore {
   runAutomationCode() {
     this.node.runAutomationCode()
   }
+  */
 }
 
 export const appStore = new AppStore()
