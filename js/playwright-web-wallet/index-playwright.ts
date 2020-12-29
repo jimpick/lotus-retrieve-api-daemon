@@ -4,6 +4,7 @@ const { mainnet } = require('@filecoin-shipyard/lotus-client-schema')
 const { BrowserProvider } = require('./browser-provider')
 const { WasmProvider } = require('./wasm-provider')
 const { Lotus } = require('./browser-retrieval/shared/lotus-client/Lotus')
+import { appStore } from './browser-retrieval/shared/store/appStore'
 
 declare const Go: any
 
@@ -12,6 +13,21 @@ async function run () {
     // Initialize Lotus client and filecoin-signing-tools from browser-retrieval
     console.log('Starting Lotus client')
     const lotus = await Lotus.create()
+
+    // Test by getting balance, sending funds, and then getting balance again
+    const balance1before = await lotus.getBalance(process.env.WALLET_1)
+    const balance2before = await lotus.getBalance(process.env.WALLET_2)
+    console.log('Balance 1 (before):', balance1before)
+    console.log('Balance 2 (before):', balance2before)
+
+    appStore.optionsStore.wallet = process.env.WALLET_1
+    appStore.optionsStore.privateKey = process.env.WALLET_1_SECRET
+    await lotus.sendFunds(5000, process.env.WALLET_2)
+
+    const balance1after = await lotus.getBalance(process.env.WALLET_1)
+    const balance2after = await lotus.getBalance(process.env.WALLET_2)
+    console.log('Balance 1 (after):', balance1after)
+    console.log('Balance 2 (after):', balance2after)
 
     console.log('Starting WASM...')
     const go = new Go()
@@ -30,7 +46,8 @@ async function run () {
     // console.log('Sleeping...')
     // await delay(3000)
 
-    const wsUrl = 'wss://lotus.jimpick.com/calibration_api/0/node/rpc/v0'
+    // const wsUrl = 'wss://lotus.jimpick.com/calibration_api/0/node/rpc/v0'
+    const wsUrl = process.env.REACT_APP_WS_ENDPOINT
     const browserProvider = new BrowserProvider(wsUrl, {
       token: async () => {
         const response = await fetch('/token')
