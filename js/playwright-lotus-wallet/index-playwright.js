@@ -47,7 +47,7 @@ async function run () {
   }
 
   const wasmRetrievalServiceProvider = new WasmProvider(
-    global.connectRetrievalService,
+    connectRetrievalService,
     {
       environment: {
         requestsForLotusHandler
@@ -88,8 +88,8 @@ async function run () {
   console.log('Retrieve WSS')
   const fileDepositId = await retrieveClient.clientRetrieve(order, fileref)
   console.log(`Retrieve WSS FileDepositID: ${JSON.stringify(fileDepositId)}`)
-  console.log(`window.collectFileDeposit`, window.collectFileDeposit)
-  const fileData = window.collectFileDeposit(fileDepositId)
+  console.log(`collectFileDeposit`, collectFileDeposit)
+  const fileData = collectFileDeposit(fileDepositId)
   console.log(`fileData`, fileData)
   const blob = new Blob([fileData], {'type': 'image/jpeg'})
   const url = URL.createObjectURL(blob)

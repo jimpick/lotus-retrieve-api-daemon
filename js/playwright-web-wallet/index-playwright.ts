@@ -6,7 +6,10 @@ const { WasmProvider } = require('./wasm-provider')
 const { Lotus } = require('./browser-retrieval/shared/lotus-client/Lotus')
 import { appStore } from './browser-retrieval/shared/store/appStore'
 
+// Global functions
 declare const Go: any
+declare const connectRetrievalService: any
+declare const collectFileDeposit: any
 
 async function run () {
   try {
@@ -43,10 +46,6 @@ async function run () {
     await delay(500) // FIXME: Get rid of this
     console.log('All systems go!')
 
-    // console.log('Sleeping...')
-    // await delay(3000)
-
-    // const wsUrl = 'wss://lotus.jimpick.com/calibration_api/0/node/rpc/v0'
     const wsUrl = process.env.REACT_APP_WS_ENDPOINT
     const browserProvider = new BrowserProvider(wsUrl, {
       token: async () => {
@@ -55,24 +54,10 @@ async function run () {
       }
     })
     await browserProvider.connect()
-    const requestsForLotusHandler = async (req, responseHandler) => {
-      const request = JSON.parse(req)
-      console.log('JSON-RPC request => Lotus', JSON.stringify(request))
-      async function waitForResult () {
-        try {
-          const result = await browserProvider.sendWs(request)
-          console.log('Jim result', JSON.stringify(result))
-          responseHandler(JSON.stringify(result))
-        } catch (e) {
-          console.error('JSON-RPC error', e.message)
-        }
-      }
-      waitForResult()
-    }
+    const requestsForLotusHandler = makeRequestsForLotusHandler(browserProvider)
 
-    /*
     const wasmRetrievalServiceProvider = new WasmProvider(
-      global.connectRetrievalService,
+      connectRetrievalService,
       {
         environment: {
           requestsForLotusHandler
@@ -113,17 +98,16 @@ async function run () {
     console.log('Retrieve WSS')
     const fileDepositId = await retrieveClient.clientRetrieve(order, fileref)
     console.log(`Retrieve WSS FileDepositID: ${JSON.stringify(fileDepositId)}`)
-    console.log(`window.collectFileDeposit`, window.collectFileDeposit)
-    const fileData = window.collectFileDeposit(fileDepositId)
+    console.log(`collectFileDeposit`, collectFileDeposit)
+    const fileData = collectFileDeposit(fileDepositId)
     console.log(`fileData`, fileData)
-    const blob = new Blob([fileData], {'type': 'image/jpeg'})
+    const blob = new Blob([fileData], { type: 'image/jpeg' })
     const url = URL.createObjectURL(blob)
     const imgEl = document.createElement('img')
     imgEl.src = url
     imgEl.width = 500
     document.body.appendChild(imgEl)
     console.log('Retrieve WSS Success')
-    */
   } catch (e) {
     console.error('Error', e.message)
   }
@@ -132,3 +116,63 @@ async function run () {
 run()
 
 // "test": "node wasm_exec.js ../../wasm/bundlemain/main.wasm 12D3KooWEUS7VnaRrHF24GTWVGYtcEsmr3jsnNLcsEwPU7rDgjf5 f063655"
+
+function makeRequestsForLotusHandler (browserProvider) {
+  const requestsForLotusHandler = async (req, responseHandler) => {
+    const request = JSON.parse(req)
+    console.log('JSON-RPC request => Lotus', JSON.stringify(request))
+    if (request.method === 'Filecoin.PaychGet') {
+      // Request: {"jsonrpc":"2.0","id":4,"method":"Filecoin.PaychGet",
+      // "params": [
+      //  "f3qkztmkfopk63qsel2xk3ek4w22epn3jnnlubnwjha2sl7rjhiuduwx24xivmhtdz7st3zmteuemeefply55q",
+      //  "f07281",
+      //  "16777216" ] }
+      // Response: {"jsonrpc":"2.0","result":{
+      //  "Channel":"t25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a",
+      //  "WaitSentinel":{
+      //    "/":"bafy2bzacedl7gm6b3kaf7cd6c7e6l7xvbwfp73sz7y43lwq3kop2oqwkdrtcw"
+      //   }},"id":4}
+    } else if (request.method === 'Filecoin.PaychAllocateLane') {
+      // Request: {"jsonrpc":"2.0","id":5,"method":"Filecoin.PaychAllocateLane",
+      // "params": [
+      //   "f25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a"
+      // ] }
+      // Response: {"jsonrpc":"2.0","result":104,"id":5}
+    } else if (request.method === 'Filecoin.PaychVoucherCreate') {
+      // Request: {"jsonrpc":"2.0","id":7,"method":"Filecoin.PaychVoucherCreate",
+      // "params":[ "f25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a", "3270170", 104] }
+      // Response: {"jsonrpc":"2.0","result":{
+      //  "Voucher":{
+      //    "ChannelAddr": "t25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a",
+      //    "TimeLockMin": 0,
+      //    "TimeLockMax": 0,
+      //    "SecretPreimage": null,
+      //    "Extra": null,
+      //    "Lane": 104,
+      //    "Nonce": 1,
+      //    "Amount": "3270170",
+      //    "MinSettleHeight": 0,
+      //    "Merges": null,
+      //    "Signature": {
+      //      "Type": 2,
+      //      "Data": "jXNHAkAVVghzKmheTA+DVGzA89ggzozL+3mhEaNm6iwV2uilx2HSBCCj04XNYg12Du23D+5vMX3ZYp0bgGb9erUYo96Sd6SiGGaCe4yZ4qBI/cwMn8En7HDZ7vO7liiv"
+      //    }
+      //  },
+      // "Shortfall": "0"
+      // }, "id":7}
+
+    } else {
+      async function callLotus () {
+        try {
+          const result = await browserProvider.sendWs(request)
+          console.log('Jim result', JSON.stringify(result))
+          responseHandler(JSON.stringify(result))
+        } catch (e) {
+          console.error('JSON-RPC error', e.message)
+        }
+      }
+      callLotus()
+    }
+  }
+  return requestsForLotusHandler
+}
