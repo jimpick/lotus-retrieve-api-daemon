@@ -38,8 +38,8 @@ app.listen(3000, function () {
 
 async function run () {
   // console.log('Launching Chromium')
-  const browser = await chromium.launch({ headless: false })
-  // const browser = await chromium.launch()
+  // const browser = await chromium.launch({ headless: false })
+  const browser = await chromium.launch()
   const page = await browser.newPage()
   page.on('console', async msg => {
     for (let i = 0; i < msg.args().length; ++i) {

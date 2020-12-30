@@ -203,6 +203,7 @@ function makeRequestsForLotusHandler (browserProvider, lotus) {
         amount,
         nonce
       )
+      console.log('Jim signedVoucher', JSON.stringify(signedVoucher))
       let sigBytes = cbor.deserialize(toByteArray(signedVoucher))[10]
       console.log('Jim voucher sigBytes', JSON.stringify(sigBytes))
       responseHandler(
@@ -221,8 +222,8 @@ function makeRequestsForLotusHandler (browserProvider, lotus) {
               MinSettleHeight: 0,
               Merges: null,
               Signature: {
-                Type: 2,
-                Data: fromByteArray(sigBytes)
+                Type: sigBytes[0],
+                Data: fromByteArray(sigBytes.slice(1))
               }
             },
             Shortfall: '0'
