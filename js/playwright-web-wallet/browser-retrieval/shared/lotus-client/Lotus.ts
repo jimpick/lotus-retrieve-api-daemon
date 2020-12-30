@@ -396,19 +396,20 @@ export class Lotus {
     return signedCreateMessage
   }
 
+  /*
   updateCustomStatus(deal: { id: string }, str) {
     if (!deal) {
       return
     }
 
-    /*
     appStore.dealsStore.setInboundDealProps(deal.id, {
       customStatus: str,
     })
-    */
   }
+  */
 
-  async createPaymentChannel({ deal, toAddr, pchAmount }) {
+  // async createPaymentChannel({ deal, toAddr, pchAmount }) {
+  async createPaymentChannel({ toAddr, pchAmount }) {
     const { wallet, privateKeyBase64 } = this.getAndParseOptions()
 
     const fromAddr = wallet
@@ -419,13 +420,13 @@ export class Lotus {
       `Lotus.createPaymentChannel: [from:${fromAddr}, fromKey:*******************, to:${toAddr}, amount:${amountAttoFil}]`,
     )
 
-    this.updateCustomStatus(deal, 'Generating nonce')
+    // this.updateCustomStatus(deal, 'Generating nonce')
 
     let nonce = await this.getNonce(fromAddr)
     appStore.logsStore.logDebug(`Lotus.createPaymentChannel: nonce=${nonce}`)
 
     // Generate the PCH create message
-    this.updateCustomStatus(deal, 'Signing message')
+    // this.updateCustomStatus(deal, 'Signing message')
     const signedCreateMessage = await this.createSignedMessagePaymentChannel({
       amountAttoFil,
       fromAddr,
@@ -441,7 +442,7 @@ export class Lotus {
     //
     // MpoolPush the PCH create message
     //
-    this.updateCustomStatus(deal, 'Pushing message')
+    // this.updateCustomStatus(deal, 'Pushing message')
     const msgCid = await this.mpoolPush(signedCreateMessage)
     //msgCid = msgCid.cid; // TODO:  add this line; msgCid should be a string not an object.
     appStore.logsStore.log(`msgCid = ${inspect(msgCid)}`)
@@ -453,7 +454,7 @@ export class Lotus {
     //
     // Wait for PCH creation message response
     //
-    this.updateCustomStatus(deal, 'Waiting for message')
+    // this.updateCustomStatus(deal, 'Waiting for message')
     const waitCreateResponseData = await this.stateWaitMsg(msgCid)
     if (!waitCreateResponseData) {
       appStore.logsStore.logError(`Lotus.createPaymentChannel: fatal: Filecoin.StateWaitMsg returned nothing`)
@@ -478,7 +479,7 @@ export class Lotus {
 
     appStore.logsStore.logDebug(`Lotus.createPaymentChannel: leaving => ${paymentChannel}`)
 
-    return paymentChannel
+    return { paymentChannel, msgCid }
   }
 
   /**
