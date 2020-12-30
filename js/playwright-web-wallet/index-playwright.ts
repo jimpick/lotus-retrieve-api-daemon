@@ -5,6 +5,8 @@ const { BrowserProvider } = require('./browser-provider')
 const { WasmProvider } = require('./wasm-provider')
 const { Lotus } = require('./browser-retrieval/shared/lotus-client/Lotus')
 import { appStore } from './browser-retrieval/shared/store/appStore'
+const { toByteArray, fromByteArray } = require('base64-js')
+const cbor = require('ipld-dag-cbor').util
 
 // Global functions
 declare const Go: any
@@ -124,6 +126,7 @@ run()
 // "test": "node wasm_exec.js ../../wasm/bundlemain/main.wasm 12D3KooWEUS7VnaRrHF24GTWVGYtcEsmr3jsnNLcsEwPU7rDgjf5 f063655"
 
 function makeRequestsForLotusHandler (browserProvider, lotus) {
+  const voucherNonces = {}
   const requestsForLotusHandler = async (req, responseHandler) => {
     const request = JSON.parse(req)
     console.log('JSON-RPC request => Lotus', JSON.stringify(request))
@@ -145,21 +148,31 @@ function makeRequestsForLotusHandler (browserProvider, lotus) {
         pchAmount
       })
       console.log('Zondax Payment channel', paymentChannel, msgCid)
-      responseHandler(JSON.stringify({
-        jsonrpc: '2.0',
-        result: {
-          Channel: paymentChannel,
-          WaitSentinel: msgCid
-        },
-        id: request.id
-      }))
+      voucherNonces[paymentChannel.slice(1)] = 0
+      responseHandler(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          result: {
+            Channel: paymentChannel,
+            WaitSentinel: msgCid
+          },
+          id: request.id
+        })
+      )
     } else if (request.method === 'Filecoin.PaychAllocateLane') {
       // Request: {"jsonrpc":"2.0","id":5,"method":"Filecoin.PaychAllocateLane",
       // "params": [
       //   "f25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a"
       // ] }
       // Response: {"jsonrpc":"2.0","result":104,"id":5}
-      console.log('Jim unimplemented PaychAllocateLane')
+      await delay(0)
+      responseHandler(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          result: 0, // Hard-coded
+          id: request.id
+        })
+      )
     } else if (request.method === 'Filecoin.PaychVoucherCreate') {
       // Request: {"jsonrpc":"2.0","id":7,"method":"Filecoin.PaychVoucherCreate",
       // "params":[ "f25dlrlbhotbryscbp5vgcijc4atlrigg6iqabu5a", "3270170", 104] }
@@ -182,7 +195,41 @@ function makeRequestsForLotusHandler (browserProvider, lotus) {
       //  },
       // "Shortfall": "0"
       // }, "id":7}
-      console.log('Jim unimplemented PaychVoucherCreate')
+      const paymentChannel = request.params[0]
+      const amount = request.params[1]
+      const nonce = voucherNonces[paymentChannel.slice(1)]++
+      const signedVoucher = await lotus.createSignedVoucher(
+        paymentChannel,
+        amount,
+        nonce
+      )
+      let sigBytes = cbor.deserialize(toByteArray(signedVoucher))[10]
+      console.log('Jim voucher sigBytes', JSON.stringify(sigBytes))
+      responseHandler(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          result: {
+            Voucher: {
+              ChannelAddr: paymentChannel,
+              TimeLockMin: 0,
+              TimeLockMax: 0,
+              SecretPreimage: null,
+              Extra: null,
+              Lane: 0, // hardcoded
+              Nonce: nonce,
+              Amount: amount,
+              MinSettleHeight: 0,
+              Merges: null,
+              Signature: {
+                Type: 2,
+                Data: fromByteArray(sigBytes)
+              }
+            },
+            Shortfall: '0'
+          },
+          id: request.id
+        })
+      )
     } else {
       async function callLotus () {
         try {

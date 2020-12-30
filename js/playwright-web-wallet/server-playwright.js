@@ -37,8 +37,9 @@ app.listen(3000, function () {
 })
 
 async function run () {
-  // const browser = await chromium.launch({ headless: false })
-  const browser = await chromium.launch()
+  // console.log('Launching Chromium')
+  const browser = await chromium.launch({ headless: false })
+  // const browser = await chromium.launch()
   const page = await browser.newPage()
   page.on('console', async msg => {
     for (let i = 0; i < msg.args().length; ++i) {
@@ -51,5 +52,6 @@ async function run () {
       }
     }
   })
+  console.log('Goto http://localhost:3000/')
   await page.goto('http://localhost:3000/')
 }

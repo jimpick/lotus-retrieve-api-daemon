@@ -27,6 +27,7 @@ module.exports = {
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
+    fallback: { "util": require.resolve("util/") }
   },
   plugins: [
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),

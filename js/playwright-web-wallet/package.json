@@ -15,6 +15,7 @@
     "@filecoin-shipyard/lotus-client-schema": "^2.0.0",
     "@zondax/filecoin-signing-tools": "^0.13.0",
     "axios": "^0.21.1",
+    "base64-js": "^1.5.1",
     "bignumber.js": "^9.0.1",
     "browser-util-inspect": "^0.2.0",
     "delay": "^4.4.0",
@@ -23,6 +24,8 @@
     "isomorphic-fetch": "^3.0.0",
     "mobx": "^6.0.4",
     "path-browserify": "^1.0.1",
+    "util": "^0.12.3",
+    "web-encoding": "^1.0.6",
     "websocket": "^1.0.32"
   },
   "devDependencies": {
