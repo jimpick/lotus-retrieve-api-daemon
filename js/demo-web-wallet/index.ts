@@ -1,4 +1,5 @@
 const delay = require('delay')
+const pako = require('pako')
 const { LotusRPC } = require('@filecoin-shipyard/lotus-client-rpc')
 const { mainnet } = require('@filecoin-shipyard/lotus-client-schema')
 const { BrowserProvider } = require('./browser-provider')
@@ -13,8 +14,47 @@ declare const Go: any
 declare const connectRetrievalService: any
 declare const collectFileDeposit: any
 
+async function download (url, defaultLength, status) {
+  // https://dev.to/samthor/progress-indicator-with-fetch-1loo
+  const response = await fetch(url)
+  let length = response.headers.get('Content-Length')
+  if (!length) {
+    length = defaultLength
+    // something was wrong with response, just give up
+    // return await response.arrayBuffer()
+  }
+  const array = new Uint8Array(Number(length))
+  let at = 0 // to index into the array
+  const reader = response.body.getReader()
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) {
+      break
+    }
+    status.textContent = `Fetching WASM bundle... ${at} of ${length} bytes`
+    array.set(value, at)
+    at += value.length
+  }
+  return array
+}
+
 async function run () {
   try {
+    const h1 = document.createElement('h1')
+    h1.textContent = 'Lotus WASM Retrieval Demo'
+    document.body.appendChild(h1)
+
+    const network = document.createElement('p')
+    network.textContent = `Network: calibration`
+    document.body.appendChild(network)
+
+    const wallet = document.createElement('p')
+    wallet.textContent = `Wallet: ${process.env.WALLET_1}`
+    document.body.appendChild(wallet)
+
+    const status = document.createElement('p')
+    document.body.appendChild(status)
+
     // Initialize Lotus client and filecoin-signing-tools from browser-retrieval
     console.log('Starting Lotus client')
     const lotus = await Lotus.create()
@@ -22,19 +62,25 @@ async function run () {
     appStore.optionsStore.wallet = process.env.WALLET_1
     appStore.optionsStore.privateKey = process.env.WALLET_1_SECRET
 
-    console.log('Starting WASM...')
+    console.log('Starting WASM...', process.env.WASM_SIZE)
     const go = new Go()
     try {
-      const wasmResult = await WebAssembly.instantiateStreaming(
-        fetch('main.wasm'),
-        go.importObject
-      )
-      go.run(wasmResult.instance)
+      const url = 'main.wasm.gz' // the gzip-compressed wasm file
+
+      const compressed = await download(url, process.env.WASM_SIZE, status)
+      status.textContent = `Uncompressing WASM... (compressed size: ${compressed.byteLength} bytes)`
+      await delay(100)
+      const wasm = pako.ungzip(compressed)
+      const size = +wasm.buffer.byteLength
+    
+      status.textContent = `Instantiating WASM... (uncompressed size: ${size} bytes)`
+      const result = await WebAssembly.instantiate(wasm, go.importObject)
+      go.run(result.instance)
     } catch (e) {
       console.error('Error', e)
     }
     await delay(500) // FIXME: Get rid of this
-    console.log('All systems go!')
+    status.innerText = 'All systems good! JS and Go loaded.'
 
     const lotusUrl = process.env.REACT_APP_LOTUS_ENDPOINT
     const browserProvider = new BrowserProvider(lotusUrl, {

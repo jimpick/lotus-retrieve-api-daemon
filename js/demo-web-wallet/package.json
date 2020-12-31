@@ -4,7 +4,7 @@
   "description": "",
   "main": "wasm_exec.js",
   "scripts": {
-    "build": "npm run fix-zondax && webpack && cp -f ../../wasm/bundlemain/main.wasm dist/",
+    "build": "npm run fix-zondax && rm -rf tmp && mkdir tmp && cp -f ../../wasm/bundlemain/main.wasm tmp/ && gzip -9 tmp/main.wasm && webpack && mv tmp/main.wasm.gz dist",
     "serve": "cd dist; npx serve",
     "fix-zondax": "cat node_modules/@zondax/filecoin-signing-tools/package.json > node_modules/@zondax/filecoin-signing-tools/package.json.old ; cat node_modules/@zondax/filecoin-signing-tools/package.json.old | jq '. | .exports.\".\" = { browser: \"./browser/filecoin_signer_wasm.js\", node: \"./nodejs/filecoin_signer_wasm.js\", require: \"./nodejs/filecoin_signer_wasm.js\", import: \"./nodejs/filecoin_signer_wasm.js\" }' > node_modules/@zondax/filecoin-signing-tools/package.json"
   },
@@ -24,6 +24,7 @@
     "ipld-dag-cbor": "^0.17.0",
     "isomorphic-fetch": "^3.0.0",
     "mobx": "^6.0.4",
+    "pako": "^2.0.2",
     "path-browserify": "^1.0.1",
     "util": "^0.12.3",
     "web-encoding": "^1.0.6",
