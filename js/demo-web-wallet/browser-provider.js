@@ -85,12 +85,15 @@ class BrowserProvider {
       body: JSON.stringify(jsonRpcRequest)
     })
     // FIXME: Check return code, errors
+    /*
     const { error, result } = await response.json()
     if (error) {
       // FIXME: Return error class with error.code
       throw new Error(error.message)
     }
     return result
+    */
+    return await response.json()
   }
 
   sendWs (jsonRpcRequest) {

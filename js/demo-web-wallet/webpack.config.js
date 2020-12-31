@@ -10,7 +10,7 @@ module.exports = {
   mode: 'development',
   target: 'web',
   entry: {
-    index: './index-playwright.ts'
+    index: './index.ts'
   },
   devtool: 'inline-source-map',
   devServer: {

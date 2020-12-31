@@ -22,7 +22,6 @@ async function run () {
     appStore.optionsStore.wallet = process.env.WALLET_1
     appStore.optionsStore.privateKey = process.env.WALLET_1_SECRET
 
-    /*
     // Test by getting balance, sending funds, and then getting balance again
     const balance1before = await lotus.getBalance(process.env.WALLET_1)
     const balance2before = await lotus.getBalance(process.env.WALLET_2)
@@ -35,7 +34,6 @@ async function run () {
     const balance2after = await lotus.getBalance(process.env.WALLET_2)
     console.log('Balance 1 (after):', balance1after)
     console.log('Balance 2 (after):', balance2after)
-    */
 
     console.log('Starting WASM...')
     const go = new Go()
@@ -51,16 +49,8 @@ async function run () {
     await delay(500) // FIXME: Get rid of this
     console.log('All systems go!')
 
-    const wsUrl = process.env.REACT_APP_WS_ENDPOINT
-    const browserProvider = new BrowserProvider(wsUrl, {
-      token: process.env.TOKEN
-      /*
-      token: async () => {
-        const response = await fetch('/token')
-        return await response.text()
-      }
-      */
-    })
+    const lotusUrl = process.env.REACT_APP_LOTUS_ENDPOINT
+    const browserProvider = new BrowserProvider(lotusUrl)
     await browserProvider.connect()
     const requestsForLotusHandler = makeRequestsForLotusHandler(
       browserProvider,
@@ -237,7 +227,7 @@ function makeRequestsForLotusHandler (browserProvider, lotus) {
     } else {
       async function callLotus () {
         try {
-          const result = await browserProvider.sendWs(request)
+          const result = await browserProvider.sendHttp(request)
           console.log('Jim result', JSON.stringify(result))
           responseHandler(JSON.stringify(result))
         } catch (e) {

@@ -5,6 +5,7 @@
   "main": "wasm_exec.js",
   "scripts": {
     "build": "npm run fix-zondax && webpack && cp -f ../../wasm/bundlemain/main.wasm dist/",
+    "serve": "cd dist; npx serve",
     "fix-zondax": "cat node_modules/@zondax/filecoin-signing-tools/package.json > node_modules/@zondax/filecoin-signing-tools/package.json.old ; cat node_modules/@zondax/filecoin-signing-tools/package.json.old | jq '. | .exports.\".\" = { browser: \"./browser/filecoin_signer_wasm.js\", node: \"./nodejs/filecoin_signer_wasm.js\", require: \"./nodejs/filecoin_signer_wasm.js\", import: \"./nodejs/filecoin_signer_wasm.js\" }' > node_modules/@zondax/filecoin-signing-tools/package.json"
   },
   "keywords": [],
