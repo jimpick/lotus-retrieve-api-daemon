@@ -22,19 +22,6 @@ async function run () {
     appStore.optionsStore.wallet = process.env.WALLET_1
     appStore.optionsStore.privateKey = process.env.WALLET_1_SECRET
 
-    // Test by getting balance, sending funds, and then getting balance again
-    const balance1before = await lotus.getBalance(process.env.WALLET_1)
-    const balance2before = await lotus.getBalance(process.env.WALLET_2)
-    console.log('Balance 1 (before):', balance1before)
-    console.log('Balance 2 (before):', balance2before)
-
-    await lotus.sendFunds(5000, process.env.WALLET_2)
-
-    const balance1after = await lotus.getBalance(process.env.WALLET_1)
-    const balance2after = await lotus.getBalance(process.env.WALLET_2)
-    console.log('Balance 1 (after):', balance1after)
-    console.log('Balance 2 (after):', balance2after)
-
     console.log('Starting WASM...')
     const go = new Go()
     try {
@@ -50,7 +37,9 @@ async function run () {
     console.log('All systems go!')
 
     const lotusUrl = process.env.REACT_APP_LOTUS_ENDPOINT
-    const browserProvider = new BrowserProvider(lotusUrl)
+    const browserProvider = new BrowserProvider(lotusUrl, {
+      token: process.env.REACT_APP_LOTUS_TOKEN
+    })
     await browserProvider.connect()
     const requestsForLotusHandler = makeRequestsForLotusHandler(
       browserProvider,

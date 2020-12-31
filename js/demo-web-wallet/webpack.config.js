@@ -32,7 +32,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new HtmlWebpackPlugin({
-      title: 'Development'
+      title: 'Filecoin WASM Retrieval Demo'
     }),
     new AddAssetHtmlPlugin({ filepath: require.resolve('./wasm_exec.js') }),
     new Dotenv(),
