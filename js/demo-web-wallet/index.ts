@@ -7,6 +7,7 @@ const { WasmProvider } = require('./wasm-provider')
 const { Lotus } = require('./browser-retrieval/shared/lotus-client/Lotus')
 import { appStore } from './browser-retrieval/shared/store/appStore'
 const { toByteArray, fromByteArray } = require('base64-js')
+const { FilecoinNumber } = require('@glif/filecoin-number')
 const cbor = require('ipld-dag-cbor').util
 
 // Global functions
@@ -39,6 +40,8 @@ async function download (url, defaultLength, status) {
 }
 
 async function run () {
+  const state = { done: false }
+  const status = document.createElement('p')
   try {
     const h1 = document.createElement('h1')
     h1.textContent = 'Lotus WASM Retrieval Demo'
@@ -52,12 +55,33 @@ async function run () {
     wallet.textContent = `Wallet: ${process.env.WALLET_1}`
     document.body.appendChild(wallet)
 
-    const status = document.createElement('p')
+    const balance = document.createElement('p')
+    balance.textContent = `Balance: (loading)`
+    document.body.appendChild(balance)
+
+    const elapsed = document.createElement('p')
+    const startTime = Date.now()
+    document.body.appendChild(elapsed)
+    async function displayTimer () {
+      while (!state.done) {
+        elapsed.textContent = `Elapsed time: ${Math.floor(
+          (Date.now() - startTime) / 1000
+        )} seconds (~45-90 seconds total)`
+        await delay(1000)
+      }
+    }
+    displayTimer()
+
+    status.id = 'status'
     document.body.appendChild(status)
 
     // Initialize Lotus client and filecoin-signing-tools from browser-retrieval
     console.log('Starting Lotus client')
     const lotus = await Lotus.create()
+
+    const balanceBefore = await lotus.getBalance(process.env.WALLET_1)
+    const balanceBeforeFil = new FilecoinNumber(balanceBefore, 'attofil')
+    balance.textContent = `Balance: ${balanceBeforeFil.toFil()}`
 
     appStore.optionsStore.wallet = process.env.WALLET_1
     appStore.optionsStore.privateKey = process.env.WALLET_1_SECRET
@@ -72,7 +96,7 @@ async function run () {
       await delay(100)
       const wasm = pako.ungzip(compressed)
       const size = +wasm.buffer.byteLength
-    
+
       status.textContent = `Instantiating WASM... (uncompressed size: ${size} bytes)`
       const result = await WebAssembly.instantiate(wasm, go.importObject)
       go.run(result.instance)
@@ -144,8 +168,14 @@ async function run () {
     imgEl.width = 500
     document.body.appendChild(imgEl)
     console.log('Retrieve WSS Success')
+    state.done = true
+    elapsed.textContent = `Elapsed time: ${Math.floor(
+      (Date.now() - startTime) / 1000
+    )} seconds (complete)`
   } catch (e) {
     console.error('Error', e.message)
+    status.textContent = `Error: ${e.message}`
+    state.done = true
   }
 }
 

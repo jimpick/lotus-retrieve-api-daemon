@@ -5,7 +5,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "target": "esnext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "es2016"],
     "jsx": "react",
     "allowJs": true,
     "esModuleInterop": true,

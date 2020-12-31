@@ -12,8 +12,10 @@
   "author": "Jim Pick (@jimpick)",
   "license": "MIT/Apache-2 (Permissive License Stack)",
   "dependencies": {
+    "@babel/runtime": "^7.12.5",
     "@filecoin-shipyard/lotus-client-rpc": "^0.0.14",
     "@filecoin-shipyard/lotus-client-schema": "^2.0.0",
+    "@glif/filecoin-number": "^1.1.0-beta.11",
     "@zondax/filecoin-signing-tools": "^0.13.0",
     "axios": "^0.21.1",
     "base64-js": "^1.5.1",

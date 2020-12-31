@@ -47,6 +47,12 @@
 				outputBuf += decoder.decode(buf);
 				const nl = outputBuf.lastIndexOf("\n");
 				if (nl != -1) {
+          // Hack!
+          const line = outputBuf.substr(0, nl);
+          if (line.match(/Jim > Recv/)) {
+            const status = document.getElementById('status')
+            status.textContent = line.slice(6)
+          }
 					console.log(outputBuf.substr(0, nl));
 					outputBuf = outputBuf.substr(nl + 1);
 				}
